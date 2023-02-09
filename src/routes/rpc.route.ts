@@ -32,45 +32,47 @@ const allowedMethods = [
     'addmultisigaddress',
 ];
 
+
+
 export const rpcRoutes = (fastify: FastifyInstance, opts: any, done: any) => {
+    const selectAndInvokeRpcCall = (request) => {
+        const { params } = request.body as { params: any[] };
+        const { method } = request.params as { method: string };
+
+        if (method === 'listunspent') {
+            return listunspent(fastify, params);
+        }
+
+        if (method === 'tl_createpayload_attestation') {
+           return getAttestationPayload(fastify, request.ip);
+        }
+
+        if (method === 'importpubkey') {
+            return importPubKey(fastify, params);
+        }
+
+        if (method === 'sendrawtransaction') {
+            return rpcClient.call(method, ...params)
+                .then((res) => {
+                    if (res.data) {
+                        saveLog(ELogType.TXIDS, res.data);
+                    }
+                    return res;
+                });
+        }
+
+        if (!allowedMethods.includes(method)) {
+            return Promise.reject({ message: `${method} Method is not allowed` });
+        }
+
+        const _params = params?.length ? params : [];
+        return rpcClient.call(method, ..._params);
+    }
+
     fastify.post('/:method', async (request, reply) => {
         try {
-            const { params } = request.body as { params: any[] };
-            const { method } = request.params as { method: string };
-
-            if (method === 'listunspent') {
-                const res = await listunspent(fastify, params);
-                reply.send(res);
-                return;
-            }
-
-            if (method === 'tl_createpayload_attestation') {
-                const res = await getAttestationPayload(fastify, request.ip);
-                reply.send(res);
-                return;
-            }
-
-            if (method === 'importpubkey') {
-                const res = await importPubKey(fastify, params);
-                reply.send(res);
-            }
-
-            if (method === 'sendrawtransaction') {
-                const res = await rpcClient.call(method, ...params);
-                if (res.data) saveLog(ELogType.TXIDS, res.data);
-                reply.send(res);
-                return;
-            }
-
-            if (!allowedMethods.includes(method)) {
-                reply.send({ error: `${method} Method is not allowed` });
-                return;
-            } else {
-                const _params = params?.length ? params : [];
-                const res = await rpcClient.call(method, ..._params);
-                reply.send(res);
-                return;
-            }
+            const res = await selectAndInvokeRpcCall(request);
+            reply.send(res);
         } catch (error) {
             reply.send({ error: error.message });
         }

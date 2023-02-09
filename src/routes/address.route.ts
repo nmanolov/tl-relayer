@@ -1,36 +1,22 @@
 import { FastifyInstance } from "fastify";
 import { fundAddress, getAddressBalance, validateAddress } from "../services/address.service";
+import { get } from "./helper";
 
 export const addressRoute = (fastify: FastifyInstance, opts: any, done: any) => {
-    fastify.get('/validate/:address', async (request, reply) => {
-        try {
-            const { address } = request.params as { address: string };
-            const res = await validateAddress(address);
-            reply.send(res);
-        } catch (error) {
-            reply.send({ error: error.message });
-        }
+    get(fastify, '/validate/:address', (request) => {
+        const { address } = request.params as { address: string };
+        return validateAddress(address);
     });
 
-    fastify.get('/balance/:address', async (request, reply) => {
-        try {
-            const { address } = request.params as { address: string };
-            const res = await getAddressBalance(address);
-            reply.send(res);
-        } catch (error) {
-            reply.send({ error: error.message });
-        }
+    get(fastify, '/balance/:address', (request) => {
+        const { address } = request.params as { address: string };
+        return getAddressBalance(address);
     });
 
-    fastify.get('/faucet/:address', async (request, reply) => {
-        try {
-            const { address } = request.params as { address: string };
-            const res = await fundAddress(address);
-            reply.send(res);
-        } catch (error) {
-            reply.send({ error: error.message });
-        }
-    });
+    get(fastify, '/faucet/:address', (request) => {
+        const { address } = request.params as { address: string };
+        return fundAddress(address);
+    })
 
     done();
 }

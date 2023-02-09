@@ -6,11 +6,11 @@ import { tokenRoute } from "./token.route";
 import { txRoute } from "./tx.route";
 
 export const handleRoutes = (server: FastifyInstance) => {
-    server.register(require('fastify-cors'));
-    server.register(require('fastify-axios'));
-    server.register(addressRoute, { prefix: '/address' });
-    server.register(txRoute, { prefix: '/tx' });
-    server.register(tokenRoute, { prefix: '/token' });
-    server.register(chainRoute, { prefix: '/chain' });
-    server.register(rpcRoutes, { prefix: '/rpc' });
+    server.register(require('fastify-cors'))
+        .register(require('fastify-axios'))
+        .register(addressRoute, { prefix: '/address' })
+        .register(txRoute, { prefix: '/tx' })
+        .register(tokenRoute, { prefix: '/token' })
+        .register(chainRoute, { prefix: '/chain' })
+        .register(rpcRoutes, { prefix: '/rpc' });
 }

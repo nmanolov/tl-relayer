@@ -1,25 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { getTokenInfo, listTokens } from "../services/token.service";
+import { get } from "./helper";
 
 export const tokenRoute = (fastify: FastifyInstance, opts: any, done: any) => {
-    fastify.get('/list', async (request, reply) => {
-        try {
-            const res = await listTokens();
-            reply.send(res);
-        } catch (error) {
-            reply.send({ error: error.message });
-        }
+    get(fastify, '/list', (request) => {
+        return listTokens();
     });
-
-    fastify.get('/:propid', async (request, reply) => {
-        try {
-            const { propid } = request.params as { propid: string };
-            const _propid = parseInt(propid);
-            const res = await getTokenInfo(_propid);
-            reply.send(res);
-        } catch (error) {
-            reply.send({ error: error.message });
-        }
+    get(fastify, '/:propid', (request) => {
+        const { propid } = request.params as { propid: string };
+        const _propid = parseInt(propid);
+        return getTokenInfo(_propid);
     });
 
     done();
