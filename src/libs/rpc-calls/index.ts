@@ -52,29 +52,38 @@ export class RpcClient {
                 response.on('end', () => {
                     const { statusCode } = response;
                     try {
-                        if (statusCode === 401) return res({ error: 'Unauthorized', statusCode, IECode: 4 });
+                        if (statusCode === 401) {
+                            res({ error: 'Unauthorized', statusCode, IECode: 4 });
+                            return;
+                        }
                         // if (statusCode !== 200) return res({ error: 'Undefined Error', statusCode, IECode: 5 })
                         const decRes = JSON.parse(buffer);
-                        decRes.hasOwnProperty('error') && decRes.error !== null
-                            ? res({
+                        if(decRes.hasOwnProperty('error') && decRes.error !== null) {
+                            res({
                                 error: decRes.error.message,
                                 statusCode,
                                 IECode: 2,
                                 EECode: decRes.error.code || 0,
-                            })
-                            : decRes.hasOwnProperty('result')
-                                ? res({ data: decRes.result, statusCode })
-                                : res({
-                                    error: decRes.error?.message || 'Undefined Error',
-                                    statusCode,
-                                    IECode: 3,
-                                    EECode: decRes.error?.code || 0,
-                                });
+                            });
+                            return;
+                        }
+                        if(decRes.hasOwnProperty('result')) {
+                            res({ data: decRes.result, statusCode });
+                            return;
+                        }
+                        res({
+                            error: decRes.error?.message || 'Undefined Error',
+                            statusCode,
+                            IECode: 3,
+                            EECode: decRes.error?.code || 0,
+                        });
 
                     } catch (error) {
-                        statusCode !== 200
-                            ? res({ error: error.message, statusCode })
-                            : res({ error: error.message, statusCode, IECode: 1 });
+                        if (statusCode !== 200) {
+                            res({ error: error.message, statusCode });
+                            return;
+                        }
+                        res({ error: error.message, statusCode, IECode: 1 });
                     }
                 });
               });
