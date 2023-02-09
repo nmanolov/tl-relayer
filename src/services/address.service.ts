@@ -3,40 +3,44 @@ import { rpcClient } from "../config/rpc.config";
 import { ELogType, saveLog } from "./utils.service";
 
 export const validateAddress = async (address:string) => {
-    const res = await rpcClient.call('validateaddress', address);
-    return res;
+    return rpcClient.call('validateaddress', address);
 }
 
 export const getAddressBalance = async (address: string) => {
-    const res = await rpcClient.call('tl_getallbalancesforaddress', address);
-    return res;
+    return rpcClient.call('tl_getallbalancesforaddress', address);
 }
 
 export const fundAddress = async (address: string) => {
     const network = envConfig.NETWORK;
-    if (network.endsWith("TEST")) {
-        const res = await rpcClient.call('sendtoaddress', address, 1);
-        return res;
+    if (!network.endsWith("TEST")) {
+        return { error: 'Faucet is Allowed only in TESTNET' };
     }
-    return { error: 'Faucet is Allowed only in TESTNET' };
+    return rpcClient.call('sendtoaddress', address, 1);
 }
 
 export const getAttestationPayload = async (server: any, ip: string) => {
     try {
-        if (!ip) throw new Error("Cant Detect Location");
+        if (!ip) {
+            throw new Error("Cant Detect Location");
+        }
         const isSafeVpnRes = await checkVPN(ip, server.axios);
-        if (isSafeVpnRes.error) throw new Error(`VPN Check Error: ${isSafeVpnRes.error}`);
-        if (isSafeVpnRes.data === true) {
-            const url = `http://www.geoplugin.net/json.gp?ip=${ip}`;
-            const { data, error } = await server.axios.get(url);
-            if (!data || error) throw new Error(error);
-            const { geoplugin_status, geoplugin_countryCode } = data;
-            if (!geoplugin_countryCode) throw new Error(`Status Code: ${geoplugin_status}`);
-            const payloadRes = await rpcClient.call('tl_createpayload_attestation', geoplugin_countryCode);
-            return payloadRes;
-        } else {
+        if (isSafeVpnRes.error) {
+            throw new Error(`VPN Check Error: ${isSafeVpnRes.error}`);
+        }
+        if (isSafeVpnRes.data !== true) {
             throw new Error("VPN Check Undefined Error");
         }
+        const url = `http://www.geoplugin.net/json.gp?ip=${ip}`;
+        
+        const { data, error } = await server.axios.get(url);
+        if (!data || error) {
+            throw new Error(error);
+        }
+        const { geoplugin_status, geoplugin_countryCode } = data;
+        if (!geoplugin_countryCode) {
+            throw new Error(`Status Code: ${geoplugin_status}`);
+        }
+        return rpcClient.call('tl_createpayload_attestation', geoplugin_countryCode);
     } catch (error: any) {
         return { error: error.message };
     }
@@ -45,10 +49,14 @@ export const getAttestationPayload = async (server: any, ip: string) => {
 export const importPubKey = async (server: any, params: any[]) => {
     try {
         const pubkey = params[0];
-        if (!pubkey) throw new Error("Pubkey not Provided");
+        if (!pubkey) {
+             throw new Error("Pubkey not Provided");
+        }
         const label = `imported-pubkeys`;
         const ipkRes = await rpcClient.call('importpubkey', pubkey, label, false);
-        if (ipkRes.error) throw new Error(ipkRes.error);
+        if (ipkRes.error) {
+            throw new Error(ipkRes.error);
+        }
         saveLog(ELogType.PUBKEYS, pubkey);
         return { data: true };
     } catch (error) {
@@ -105,21 +113,33 @@ const checkVPN = async (ip: string, axios: any) => {
         let isSafe = false;
         let isVpn = false;
         for (let i = 0; i < vpnCheckConf.length; i++) {
-            if (isSafe || isVpn) break;
+            if (isSafe || isVpn) {
+                break;
+            }
             const vpnObj = vpnCheckConf[i];
             const config: any = {};
-            if (vpnObj.params) config.params = vpnObj.params;
-            if (vpnObj.headers) config.headers = vpnObj.headers;
+            if (vpnObj.params) {
+                config.params = vpnObj.params;
+            }
+            if (vpnObj.headers) {
+                config.headers = vpnObj.headers;
+            }
             await axios.get(vpnObj.url, config)
                 .then((res: any) => {
                     const _isVpn = vpnObj.isVPN(res.data);
-                    if (_isVpn) isVpn = true;
+                    if (_isVpn) {
+                        isVpn = true;
+                    }
                     const _isSafe = vpnObj.isSafe(res.data);
-                    if (_isSafe) isSafe = true;
+                    if (_isSafe) {
+                        isSafe = true;
+                    }
                 })
                 .catch((err: any) => console.log(err.message));
         };
-        if (!isSafe || isVpn) throw new Error('VPN is not Allowed.Please make sure your VPN is turned Off');
+        if (!isSafe || isVpn) {
+            throw new Error('VPN is not Allowed.Please make sure your VPN is turned Off');
+        }
         return { data: isSafe };
     } catch (error: any) {
         return { error: error.message };
