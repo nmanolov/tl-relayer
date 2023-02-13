@@ -11,7 +11,7 @@ export const handleRoutes = (server: FastifyInstance) => {
         .register(require('fastify-axios'))
         .register(addressRoute, { prefix: '/address' })
         .register(txRoute, { prefix: '/tx' })
-        .register(tokenRoute, { prefix: '/token' })
+        .register(tokenRoute, { prefix: '/tokens' })
         .register(contractRoute, {prefix: '/contracts'})
         .register(chainRoute, { prefix: '/chain' })
         .register(rpcRoutes, { prefix: '/rpc' });
