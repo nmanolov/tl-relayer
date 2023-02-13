@@ -12,7 +12,7 @@ export const handleRoutes = (server: FastifyInstance) => {
         .register(addressRoute, { prefix: '/address' })
         .register(txRoute, { prefix: '/tx' })
         .register(tokenRoute, { prefix: '/token' })
-        .register(contractRoute, {prefix: '/contract'})
+        .register(contractRoute, {prefix: '/contracts'})
         .register(chainRoute, { prefix: '/chain' })
         .register(rpcRoutes, { prefix: '/rpc' });
 }
