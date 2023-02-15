@@ -21,7 +21,7 @@ export const addressRoute = (fastify: FastifyInstance, opts: any, done: any) => 
     get(fastify, '/:address/faucet', (request) => {
         const { address } = request.params as { address: string };
         return fundAddress(address);
-    })
+    });
 
     done();
 }
