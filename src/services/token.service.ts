@@ -38,3 +38,7 @@ export const getCache = (propId: number, type: string) => {
 export const getLtcVolume = (propId: number, firstBlock: number, secondBlock: number) => {
     return rpcClient.call('tl_get_ltcvolume', propId, firstBlock, secondBlock);
 }
+
+export const getVestingInfo = (propId: number) => {
+    return rpcClient.call('tl_getvesting_info', propId);
+}

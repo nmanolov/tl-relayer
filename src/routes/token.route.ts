@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { getTokenInfo, listTokens, getTokenCurrencyTotal, getCache, getLtcVolume } from "../services/token.service";
+import { getTokenInfo, listTokens, getTokenCurrencyTotal, getCache, getLtcVolume, getVestingInfo } from "../services/token.service";
 import { get } from "./helper";
 
 export const tokenRoute = (fastify: FastifyInstance, opts: any, done: any) => {
@@ -23,6 +23,12 @@ export const tokenRoute = (fastify: FastifyInstance, opts: any, done: any) => {
         const { cacheType } = request.query as { cacheType: string };
         const _propId = parseInt(propertyId);
         return getCache(_propId, cacheType);
+    });
+
+    get(fastify, '/:propertyId/vesting_info', (request) => {
+        const { propertyId } = request.params as { propertyId: string };
+        const _propId = parseInt(propertyId);
+        return getVestingInfo(_propId);
     });
 
     get(fastify, '/:propertyId/ltc_volume', (request) => {

@@ -1,19 +1,24 @@
 import { FastifyInstance } from "fastify";
-import { fundAddress, getAddressBalance, validateAddress } from "../services/address.service";
+import { fundAddress, getBalance, getUnvestedBalance, validate } from "../services/address.service";
 import { get } from "./helper";
 
 export const addressRoute = (fastify: FastifyInstance, opts: any, done: any) => {
-    get(fastify, '/validate/:address', (request) => {
+    get(fastify, '/:address/validate', (request) => {
         const { address } = request.params as { address: string };
-        return validateAddress(address);
+        return validate(address);
     });
 
-    get(fastify, '/balance/:address', (request) => {
+    get(fastify, '/:address/balance', (request) => {
         const { address } = request.params as { address: string };
-        return getAddressBalance(address);
+        return getBalance(address);
     });
 
-    get(fastify, '/faucet/:address', (request) => {
+    get(fastify, '/:address/unvested_balance', (request) => {
+        const { address } = request.params as { address: string };
+        return getUnvestedBalance(address);
+    });
+
+    get(fastify, '/:address/faucet', (request) => {
         const { address } = request.params as { address: string };
         return fundAddress(address);
     })

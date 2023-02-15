@@ -9,7 +9,7 @@ import { txRoute } from "./tx.route";
 export const handleRoutes = (server: FastifyInstance) => {
     server.register(require('fastify-cors'))
         .register(require('fastify-axios'))
-        .register(addressRoute, { prefix: '/address' })
+        .register(addressRoute, { prefix: '/addresses' })
         .register(txRoute, { prefix: '/tx' })
         .register(tokenRoute, { prefix: '/tokens' })
         .register(contractRoute, {prefix: '/contracts'})
